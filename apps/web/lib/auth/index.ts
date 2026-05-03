@@ -2,6 +2,7 @@ import { AUTH_MODE } from "@/lib/env";
 import type { AuthAdapter } from "./adapter";
 import { bearerAdapter } from "./adapters/bearer";
 import { cookieAdapter } from "./adapters/cookie";
+import { googleAdapter } from "./adapters/google";
 import { mockAdapter } from "./adapters/mock";
 
 export const authAdapter: AuthAdapter =
@@ -9,7 +10,9 @@ export const authAdapter: AuthAdapter =
         ? mockAdapter
         : AUTH_MODE === "cookie"
             ? cookieAdapter
-            : bearerAdapter;
+            : AUTH_MODE === "google"
+                ? googleAdapter
+                : bearerAdapter;
 
 export type { AuthAdapter, AuthMode, LoginPayload, RegisterPayload } from "./adapter";
 export {

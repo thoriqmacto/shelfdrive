@@ -8,6 +8,8 @@ export const AUTH_MODE: AuthMode =
         ? "cookie"
         : process.env.NEXT_PUBLIC_AUTH_MODE === "mock"
             ? "mock"
-            : "bearer";
+            : process.env.NEXT_PUBLIC_AUTH_MODE === "google"
+                ? "google"
+                : "bearer";
 
-export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "Starter";
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "ShelfDrive";

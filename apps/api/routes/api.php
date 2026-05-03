@@ -16,6 +16,18 @@ Route::prefix('v1')->group(function () {
         Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
+        // Google login (primary identity).
+        // start: redirects browser to Google's consent screen.
+        // callback: Google redirects here; we redirect back to web with a
+        //   single-use exchange code (NOT a Sanctum token) in the query.
+        // exchange: web POSTs the code to retrieve the actual Sanctum token.
+        Route::get('/auth/google/start', [AuthController::class, 'googleStart'])
+            ->name('auth.google.start');
+        Route::get('/auth/google/callback', [AuthController::class, 'googleCallback'])
+            ->name('auth.google.callback');
+        Route::post('/auth/google/exchange', [AuthController::class, 'googleExchange'])
+            ->name('auth.google.exchange');
+
         // Email verification — link target. Signed URL, no auth.
         Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
             ->middleware('signed')
