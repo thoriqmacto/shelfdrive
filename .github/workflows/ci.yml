@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Web (Next.js)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run -w apps/web lint
+      - run: npm run -w apps/web typecheck
+      - run: npm run -w apps/web build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+          NEXT_PUBLIC_AUTH_MODE: bearer
+          NEXT_PUBLIC_APP_NAME: Starter
+
+  api:
+    name: API (Laravel)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, sqlite, pdo_sqlite
+          coverage: none
+          tools: composer:v2
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: apps/api/vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('apps/api/composer.lock') }}
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Prepare test env
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+      - name: Run tests
+        shell: bash
+        run: |
+          set +e
+          php artisan test --without-tty 2>&1 | tee /tmp/test-output.txt
+          RC=${PIPESTATUS[0]}
+          set -e
+          if [ "$RC" -ne 0 ]; then
+            {
+              echo "## API test failure (exit $RC)"
+              echo
+              echo '```'
+              cat /tmp/test-output.txt
+              echo '```'
+              if [ -f storage/logs/laravel.log ]; then
+                echo
+                echo '### storage/logs/laravel.log'
+                echo '```'
+                tail -c 20000 storage/logs/laravel.log
+                echo '```'
+              fi
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit $RC
+
+  setup-script:
+    name: Setup script (non-interactive smoke)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: node scripts/setup.mjs check || true
