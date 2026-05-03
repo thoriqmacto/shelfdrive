@@ -332,9 +332,12 @@ class AuthController extends Controller
             }
             $user->save();
 
-            ConnectedGoogleAccount::updateOrCreate(
+            // Call through the HasMany relation so user_id is auto-set —
+            // user_id is intentionally excluded from $fillable per the
+            // starter's mass-assignment rule, so static updateOrCreate
+            // would silently drop it.
+            $user->connectedGoogleAccounts()->updateOrCreate(
                 [
-                    'user_id' => $user->id,
                     'google_sub' => $sub,
                     'purpose' => ConnectedGoogleAccount::PURPOSE_LOGIN,
                 ],
