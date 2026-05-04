@@ -1,11 +1,14 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BookmarkController;
 use App\Http\Controllers\Api\V1\ConnectedAccountController;
 use App\Http\Controllers\Api\V1\DuplicateController;
 use App\Http\Controllers\Api\V1\EbookListController;
 use App\Http\Controllers\Api\V1\EbookListItemController;
+use App\Http\Controllers\Api\V1\EbookNoteController;
 use App\Http\Controllers\Api\V1\LibraryController;
+use App\Http\Controllers\Api\V1\LibraryProgressController;
 use App\Http\Controllers\Api\V1\SyncController;
 use Illuminate\Support\Facades\Route;
 
@@ -64,9 +67,33 @@ Route::prefix('v1')->group(function () {
 
         // ShelfDrive: library + sync.
         Route::get('/library', [LibraryController::class, 'index']);
+        Route::get('/library/{file}', [LibraryController::class, 'show'])
+            ->whereNumber('file');
+        Route::get('/library/{file}/progress', [LibraryProgressController::class, 'show'])
+            ->whereNumber('file');
+        Route::patch('/library/{file}/progress', [LibraryProgressController::class, 'update'])
+            ->whereNumber('file');
+        Route::get('/library/{file}/bookmarks', [BookmarkController::class, 'indexForFile'])
+            ->whereNumber('file');
+        Route::post('/library/{file}/bookmarks', [BookmarkController::class, 'store'])
+            ->whereNumber('file');
+        Route::get('/library/{file}/notes', [EbookNoteController::class, 'indexForFile'])
+            ->whereNumber('file');
+        Route::post('/library/{file}/notes', [EbookNoteController::class, 'store'])
+            ->whereNumber('file');
         Route::get('/sync', [SyncController::class, 'index']);
         Route::post('/sync/{account}/run', [SyncController::class, 'run'])
             ->whereNumber('account');
+
+        // ShelfDrive: global bookmark + note views.
+        Route::get('/bookmarks', [BookmarkController::class, 'indexGlobal']);
+        Route::delete('/bookmarks/{bookmark}', [BookmarkController::class, 'destroy'])
+            ->whereNumber('bookmark');
+        Route::get('/notes', [EbookNoteController::class, 'indexGlobal']);
+        Route::patch('/notes/{note}', [EbookNoteController::class, 'update'])
+            ->whereNumber('note');
+        Route::delete('/notes/{note}', [EbookNoteController::class, 'destroy'])
+            ->whereNumber('note');
 
         // ShelfDrive: duplicate groups.
         Route::get('/duplicates', [DuplicateController::class, 'index']);
@@ -87,7 +114,7 @@ Route::prefix('v1')->group(function () {
         Route::delete('/lists/{list}/items/{item}', [EbookListItemController::class, 'destroy'])
             ->whereNumber('list')->whereNumber('item');
 
-        // ShelfDrive resources added per phase: /bookmarks, /notes
-        // (ebook annotations), /share — ship as their phases land.
+        // ShelfDrive resources still pending: /share — ship as the
+        // sharing phase lands.
     });
 });

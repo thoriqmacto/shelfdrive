@@ -89,4 +89,28 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(EbookList::class);
     }
+
+    /**
+     * @return HasMany<ReadingProgress, $this>
+     */
+    public function readingProgress(): HasMany
+    {
+        return $this->hasMany(ReadingProgress::class);
+    }
+
+    /**
+     * @return HasMany<EbookBookmark, $this>
+     */
+    public function ebookBookmarks(): HasMany
+    {
+        return $this->hasMany(EbookBookmark::class);
+    }
+
+    /**
+     * @return HasMany<EbookNote, $this>
+     */
+    public function ebookNotes(): HasMany
+    {
+        return $this->hasMany(EbookNote::class);
+    }
 }

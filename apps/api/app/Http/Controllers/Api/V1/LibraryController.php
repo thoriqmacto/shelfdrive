@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\DriveFile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
 /**
  * Read-only listing of the user's indexed ebook files. Phase 4 ships
  * basic search + filter; the per-book detail / progress / bookmark
@@ -47,6 +46,46 @@ class LibraryController extends Controller
                 'per_page' => $page->perPage(),
                 'total' => $page->total(),
             ],
+        ]);
+    }
+
+    /**
+     * Detailed read of one indexed file. Owner-scoped. Eagerly loads
+     * the user's reading progress for this file so the detail page
+     * can show "Resume at page N" without an extra round-trip.
+     */
+    public function show(Request $request, DriveFile $file): JsonResponse
+    {
+        abort_unless($file->user_id === $request->user()->id, 404);
+
+        $progress = $request->user()
+            ->readingProgress()
+            ->where('drive_file_id', $file->id)
+            ->first();
+
+        $bookmarkCount = $request->user()
+            ->ebookBookmarks()
+            ->where('drive_file_id', $file->id)
+            ->count();
+
+        $noteCount = $request->user()
+            ->ebookNotes()
+            ->where('drive_file_id', $file->id)
+            ->count();
+
+        return response()->json([
+            'data' => array_merge($this->present($file), [
+                'parent_folder_path' => $file->parent_folder_path,
+                'md5_checksum' => $file->md5_checksum,
+                'progress' => $progress ? [
+                    'page' => $progress->page,
+                    'cfi' => $progress->cfi,
+                    'percent' => (float) $progress->percent,
+                    'last_read_at' => $progress->last_read_at?->toIso8601String(),
+                ] : null,
+                'bookmark_count' => $bookmarkCount,
+                'note_count' => $noteCount,
+            ]),
         ]);
     }
 
