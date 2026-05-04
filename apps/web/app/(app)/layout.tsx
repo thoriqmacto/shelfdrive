@@ -37,6 +37,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             <Link href="/dashboard" className="hover:text-foreground">
                                 Dashboard
                             </Link>
+                            <Link href="/accounts" className="hover:text-foreground">
+                                Accounts
+                            </Link>
                             <Link href="/settings" className="hover:text-foreground">
                                 Settings
                             </Link>

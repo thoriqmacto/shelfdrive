@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ConnectedAccountController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/ping', fn () => response()->json([
@@ -15,6 +16,24 @@ Route::prefix('v1')->group(function () {
         Route::post('/login', [AuthController::class, 'login']);
         Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
+        // Google login (primary identity).
+        // start: redirects browser to Google's consent screen.
+        // callback: Google redirects here; we redirect back to web with a
+        //   single-use exchange code (NOT a Sanctum token) in the query.
+        // exchange: web POSTs the code to retrieve the actual Sanctum token.
+        Route::get('/auth/google/start', [AuthController::class, 'googleStart'])
+            ->name('auth.google.start');
+        Route::get('/auth/google/callback', [AuthController::class, 'googleCallback'])
+            ->name('auth.google.callback');
+        Route::post('/auth/google/exchange', [AuthController::class, 'googleExchange'])
+            ->name('auth.google.exchange');
+
+        // Drive-connect callback. Public because Google redirects the
+        // bare browser back here; the originating user is recovered from
+        // a server-side state cache (see ConnectedAccountController).
+        Route::get('/drive/oauth/callback', [ConnectedAccountController::class, 'connectCallback'])
+            ->name('drive.oauth.callback');
 
         // Email verification — link target. Signed URL, no auth.
         Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
@@ -31,9 +50,15 @@ Route::prefix('v1')->group(function () {
         Route::post('/email/verification-notification', [AuthController::class, 'sendVerificationEmail'])
             ->middleware('throttle:auth');
 
-        // ShelfDrive resources are added per phase. See routes registered in
-        // routes/api.php as the /library, /accounts, /lists, /bookmarks,
-        // /notes (ebook annotations), /duplicates, /sync, /share endpoints
-        // come online.
+        // ShelfDrive: connected Drive accounts.
+        Route::get('/accounts', [ConnectedAccountController::class, 'index']);
+        Route::get('/drive/oauth/start', [ConnectedAccountController::class, 'connectStart'])
+            ->name('drive.oauth.start');
+        Route::delete('/accounts/{account}', [ConnectedAccountController::class, 'destroy'])
+            ->whereNumber('account');
+
+        // ShelfDrive resources added per phase: /library, /lists,
+        // /bookmarks, /notes (ebook annotations), /duplicates, /sync,
+        // /share — ship as their phases land.
     });
 });

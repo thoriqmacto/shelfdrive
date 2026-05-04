@@ -32,6 +32,12 @@ type AuthContextValue = {
     register: (payload: RegisterPayload) => Promise<void>;
     logout: () => Promise<void>;
     refresh: () => Promise<void>;
+    // Redirect-based OAuth flow (Google). Undefined when the active
+    // adapter does not support redirect entry.
+    startRedirect: ((next?: string) => void) | null;
+    // Completes a redirect-based OAuth flow using a single-use code
+    // returned in the URL query (e.g. ?google_code=…).
+    completeRedirect: ((code: string, next?: string) => Promise<void>) | null;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -120,9 +126,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         router.push("/login");
     }, [router]);
 
+    const startRedirect = useMemo(() => {
+        if (!authAdapter.redirectStart) return null;
+        const fn = authAdapter.redirectStart.bind(authAdapter);
+        return (next?: string) => fn(next);
+    }, []);
+
+    const completeRedirect = useMemo(() => {
+        if (!authAdapter.completeRedirect) return null;
+        const fn = authAdapter.completeRedirect.bind(authAdapter);
+        return async (code: string, next?: string) => {
+            const auth = await fn(code);
+            if (authAdapter.mode !== "cookie") writeAuth(auth);
+            setUser(auth.user);
+            setStatus("authenticated");
+            router.push(next && next.startsWith("/") ? next : "/dashboard");
+        };
+    }, [router]);
+
     const value = useMemo<AuthContextValue>(
-        () => ({ status, user, login, register, logout, refresh }),
-        [status, user, login, register, logout, refresh],
+        () => ({ status, user, login, register, logout, refresh, startRedirect, completeRedirect }),
+        [status, user, login, register, logout, refresh, startRedirect, completeRedirect],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
