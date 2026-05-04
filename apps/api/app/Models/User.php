@@ -57,4 +57,20 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(ConnectedGoogleAccount::class);
     }
+
+    /**
+     * @return HasMany<DriveFile, $this>
+     */
+    public function driveFiles(): HasMany
+    {
+        return $this->hasMany(DriveFile::class);
+    }
+
+    /**
+     * @return HasMany<EbookCategory, $this>
+     */
+    public function ebookCategories(): HasMany
+    {
+        return $this->hasMany(EbookCategory::class);
+    }
 }

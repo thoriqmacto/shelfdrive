@@ -40,6 +40,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             <Link href="/accounts" className="hover:text-foreground">
                                 Accounts
                             </Link>
+                            <Link href="/sync" className="hover:text-foreground">
+                                Sync
+                            </Link>
                             <Link href="/settings" className="hover:text-foreground">
                                 Settings
                             </Link>
