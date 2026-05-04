@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Drive;
 
+use App\Jobs\Drive\DetectDuplicates;
 use App\Models\ConnectedGoogleAccount;
 use App\Models\DriveFile;
 use App\Models\SyncRun;
@@ -137,6 +138,11 @@ class ScanDriveAccount implements ShouldQueue
             ])->save();
 
             $account->forceFill(['last_full_scan_at' => now()])->save();
+
+            // After a successful scan, kick duplicate detection for the
+            // owning user. The job dedupes on user_id so multiple
+            // concurrent account scans converge to one detection run.
+            DetectDuplicates::dispatch($account->user_id);
         } catch (Throwable $e) {
             Log::warning('ScanDriveAccount failed', [
                 'account_id' => $account->id,

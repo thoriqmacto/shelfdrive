@@ -73,4 +73,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(EbookCategory::class);
     }
+
+    /**
+     * @return HasMany<DuplicateGroup, $this>
+     */
+    public function duplicateGroups(): HasMany
+    {
+        return $this->hasMany(DuplicateGroup::class);
+    }
 }
