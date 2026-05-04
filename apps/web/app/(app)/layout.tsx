@@ -46,6 +46,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             <Link href="/duplicates" className="hover:text-foreground">
                                 Duplicates
                             </Link>
+                            <Link href="/lists" className="hover:text-foreground">
+                                Lists
+                            </Link>
                             <Link href="/settings" className="hover:text-foreground">
                                 Settings
                             </Link>
