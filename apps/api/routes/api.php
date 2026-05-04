@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ConnectedAccountController;
 use App\Http\Controllers\Api\V1\DuplicateController;
+use App\Http\Controllers\Api\V1\EbookListController;
+use App\Http\Controllers\Api\V1\EbookListItemController;
 use App\Http\Controllers\Api\V1\LibraryController;
 use App\Http\Controllers\Api\V1\SyncController;
 use Illuminate\Support\Facades\Route;
@@ -71,8 +73,21 @@ Route::prefix('v1')->group(function () {
         Route::post('/duplicates/{group}/resolve', [DuplicateController::class, 'resolve'])
             ->whereNumber('group');
 
-        // ShelfDrive resources added per phase: /lists, /bookmarks,
-        // /notes (ebook annotations), /share — ship as their phases
-        // land.
+        // ShelfDrive: ebook lists / playlists.
+        Route::get('/lists', [EbookListController::class, 'index']);
+        Route::post('/lists', [EbookListController::class, 'store']);
+        Route::get('/lists/{list}', [EbookListController::class, 'show'])
+            ->whereNumber('list');
+        Route::patch('/lists/{list}', [EbookListController::class, 'update'])
+            ->whereNumber('list');
+        Route::delete('/lists/{list}', [EbookListController::class, 'destroy'])
+            ->whereNumber('list');
+        Route::post('/lists/{list}/items', [EbookListItemController::class, 'store'])
+            ->whereNumber('list');
+        Route::delete('/lists/{list}/items/{item}', [EbookListItemController::class, 'destroy'])
+            ->whereNumber('list')->whereNumber('item');
+
+        // ShelfDrive resources added per phase: /bookmarks, /notes
+        // (ebook annotations), /share — ship as their phases land.
     });
 });
