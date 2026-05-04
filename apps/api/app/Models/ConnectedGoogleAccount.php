@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * A Google account a user has connected to ShelfDrive.
@@ -63,5 +64,21 @@ class ConnectedGoogleAccount extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return HasMany<DriveFile, $this>
+     */
+    public function driveFiles(): HasMany
+    {
+        return $this->hasMany(DriveFile::class, 'connected_account_id');
+    }
+
+    /**
+     * @return HasMany<SyncRun, $this>
+     */
+    public function syncRuns(): HasMany
+    {
+        return $this->hasMany(SyncRun::class, 'connected_account_id');
     }
 }

@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ConnectedAccountController;
+use App\Http\Controllers\Api\V1\LibraryController;
+use App\Http\Controllers\Api\V1\SyncController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/ping', fn () => response()->json([
@@ -57,8 +59,14 @@ Route::prefix('v1')->group(function () {
         Route::delete('/accounts/{account}', [ConnectedAccountController::class, 'destroy'])
             ->whereNumber('account');
 
-        // ShelfDrive resources added per phase: /library, /lists,
-        // /bookmarks, /notes (ebook annotations), /duplicates, /sync,
-        // /share — ship as their phases land.
+        // ShelfDrive: library + sync.
+        Route::get('/library', [LibraryController::class, 'index']);
+        Route::get('/sync', [SyncController::class, 'index']);
+        Route::post('/sync/{account}/run', [SyncController::class, 'run'])
+            ->whereNumber('account');
+
+        // ShelfDrive resources added per phase: /lists, /bookmarks,
+        // /notes (ebook annotations), /duplicates, /share — ship as
+        // their phases land.
     });
 });
