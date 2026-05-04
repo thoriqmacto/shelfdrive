@@ -43,6 +43,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             <Link href="/sync" className="hover:text-foreground">
                                 Sync
                             </Link>
+                            <Link href="/duplicates" className="hover:text-foreground">
+                                Duplicates
+                            </Link>
                             <Link href="/settings" className="hover:text-foreground">
                                 Settings
                             </Link>

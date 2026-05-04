@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ConnectedAccountController;
+use App\Http\Controllers\Api\V1\DuplicateController;
 use App\Http\Controllers\Api\V1\LibraryController;
 use App\Http\Controllers\Api\V1\SyncController;
 use Illuminate\Support\Facades\Route;
@@ -65,8 +66,13 @@ Route::prefix('v1')->group(function () {
         Route::post('/sync/{account}/run', [SyncController::class, 'run'])
             ->whereNumber('account');
 
+        // ShelfDrive: duplicate groups.
+        Route::get('/duplicates', [DuplicateController::class, 'index']);
+        Route::post('/duplicates/{group}/resolve', [DuplicateController::class, 'resolve'])
+            ->whereNumber('group');
+
         // ShelfDrive resources added per phase: /lists, /bookmarks,
-        // /notes (ebook annotations), /duplicates, /share — ship as
-        // their phases land.
+        // /notes (ebook annotations), /share — ship as their phases
+        // land.
     });
 });
