@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\EbookListItemController;
 use App\Http\Controllers\Api\V1\EbookNoteController;
 use App\Http\Controllers\Api\V1\LibraryController;
 use App\Http\Controllers\Api\V1\LibraryProgressController;
+use App\Http\Controllers\Api\V1\LibraryStreamController;
 use App\Http\Controllers\Api\V1\SyncController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +44,13 @@ Route::prefix('v1')->group(function () {
         Route::get('/drive/oauth/callback', [ConnectedAccountController::class, 'connectCallback'])
             ->name('drive.oauth.callback');
 
+        // Ebook stream proxy. Public so <embed>/<iframe> elements (which
+        // can't set Authorization headers) work; auth happens via either
+        // the Sanctum guard or a single-use ?token= consumed from cache.
+        Route::get('/library/{file}/stream', [LibraryStreamController::class, 'stream'])
+            ->whereNumber('file')
+            ->name('library.stream');
+
         // Email verification — link target. Signed URL, no auth.
         Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
             ->middleware('signed')
@@ -68,6 +76,8 @@ Route::prefix('v1')->group(function () {
         // ShelfDrive: library + sync.
         Route::get('/library', [LibraryController::class, 'index']);
         Route::get('/library/{file}', [LibraryController::class, 'show'])
+            ->whereNumber('file');
+        Route::post('/library/{file}/stream/access', [LibraryStreamController::class, 'access'])
             ->whereNumber('file');
         Route::get('/library/{file}/progress', [LibraryProgressController::class, 'show'])
             ->whereNumber('file');
