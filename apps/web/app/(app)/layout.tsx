@@ -37,17 +37,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             <Link href="/dashboard" className="hover:text-foreground">
                                 Dashboard
                             </Link>
+                            <Link href="/library" className="hover:text-foreground">
+                                Library
+                            </Link>
+                            <Link href="/lists" className="hover:text-foreground">
+                                Lists
+                            </Link>
+                            <Link href="/bookmarks" className="hover:text-foreground">
+                                Bookmarks
+                            </Link>
+                            <Link href="/notes" className="hover:text-foreground">
+                                Notes
+                            </Link>
+                            <Link href="/duplicates" className="hover:text-foreground">
+                                Duplicates
+                            </Link>
                             <Link href="/accounts" className="hover:text-foreground">
                                 Accounts
                             </Link>
                             <Link href="/sync" className="hover:text-foreground">
                                 Sync
-                            </Link>
-                            <Link href="/duplicates" className="hover:text-foreground">
-                                Duplicates
-                            </Link>
-                            <Link href="/lists" className="hover:text-foreground">
-                                Lists
                             </Link>
                             <Link href="/settings" className="hover:text-foreground">
                                 Settings
